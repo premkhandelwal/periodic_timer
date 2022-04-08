@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:periodic_timer/data/enums.dart';
+import 'package:periodic_timer/data/models/ringTone.dart';
 import 'package:periodic_timer/data/models/time.dart';
-import 'package:periodic_timer/logic/setTime/set_time_cubit.dart';
+import 'package:periodic_timer/logic/ringtone/ringtone_cubit.dart';
 import 'package:periodic_timer/screens/countdown_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,10 +19,10 @@ int seconds = 0;
 
 class _HomePageState extends State<HomePage> {
   final ScrollController middle = ScrollController();
-  late SetTimeCubit setTimeCubit;
+  late RingtoneCubit ringtoneCubit;
   @override
   void initState() {
-   setTimeCubit = BlocProvider.of<SetTimeCubit>(context);
+    ringtoneCubit = BlocProvider.of<RingtoneCubit>(context);
     super.initState();
   }
 
@@ -33,41 +34,72 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
           children: [
-            const Spacer(),
-            Center(
-              child: Container(
-                height: 375,
-                width: double.infinity,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TimeSelectorWidget(maxVal: 23, timeType: TimeType.hours),
-                    TimeSelectorWidget(maxVal: 59, timeType: TimeType.minutes),
-                    TimeSelectorWidget(maxVal: 59, timeType: TimeType.seconds),
-                  ],
-                ),
-              ),
-            ),
-            const Spacer(),
-            Container(
-              margin: const EdgeInsets.only(bottom: 60),
-              child: IconButton(
-                onPressed: () {
-                  setTimeCubit.timeSelectionChanged(
-                      Time(hours: hours, minutes: minutes, seconds: seconds));
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (ctx) => CountDownDisplayPage(time:  Time(hours: hours, minutes: minutes, seconds: seconds),)),
-                  );
-                },
-                icon: const Icon(Icons.play_circle, size: 50),
-              ),
-            ),
+              Align(alignment: Alignment.centerRight,child: IconButton(onPressed: (){}, icon: Icon(Icons.more_vert))),
+      
+            BlocBuilder<RingtoneCubit, RingtoneState>(
+                builder: (context, state) {
+              if (state is ChangePageState) {
+                return Expanded(child: state.page);
+              }
+              return Expanded(child: HomePageWidget(ringtoneCubit: ringtoneCubit));
+            }),
           ],
         ),
       ),
+    );
+  }
+}
+
+class HomePageWidget extends StatelessWidget {
+  const HomePageWidget({
+    Key? key,
+    required this.ringtoneCubit,
+  }) : super(key: key);
+
+  final RingtoneCubit ringtoneCubit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Spacer(),
+        Center(
+          child: Container(
+            height: 375,
+            width: double.infinity,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TimeSelectorWidget(maxVal: 23, timeType: TimeType.hours),
+                TimeSelectorWidget(maxVal: 59, timeType: TimeType.minutes),
+                TimeSelectorWidget(maxVal: 59, timeType: TimeType.seconds),
+              ],
+            ),
+          ),
+        ),
+        const Spacer(),
+        Container(
+          margin: const EdgeInsets.only(bottom: 60),
+          child: IconButton(
+            onPressed: () {
+              ringtoneCubit.timeSelectionChanged(
+                  Time(hours: hours, minutes: minutes, seconds: seconds));
+              ringtoneCubit.changePage(CountDownDisplayPage(
+                time: Time(hours: hours, minutes: minutes, seconds: seconds),
+              ));
+              /*  Navigator.push(
+                context,
+                MaterialPageRoute(builder: (ctx) => CountDownDisplayPage(time:  Time(hours: hours, minutes: minutes, seconds: seconds),)),
+              ); */
+            },
+            icon: const Icon(Icons.play_circle, size: 50),
+          ),
+        ),
+      ],
     );
   }
 }

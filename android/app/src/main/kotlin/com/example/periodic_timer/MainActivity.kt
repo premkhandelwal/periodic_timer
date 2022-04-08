@@ -8,12 +8,9 @@ import android.net.Uri
 import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.common.MethodChannel
-import java.io.IOException
 
 class MainActivity: FlutterActivity() {
     private val channel1 = "com.example.periodic_timer1"
-    private val channel2 = "com.example.periodic_timer2"
-    private val channel3 = "com.example.periodic_timer3"
 var _ringtone: Ringtone? = null;
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,29 +20,9 @@ var _ringtone: Ringtone? = null;
                     "getAllRingtones" -> {
                         result.success(getAllRingtones(this))
                     }
-                }
-
-
-// add this method to handle the calls from flutter
-
-            }
-        MethodChannel(flutterEngine?.dartExecutor?.binaryMessenger, channel2)
-            .setMethodCallHandler { call, result ->
-                when (call.method) {
-
                     "playRingtones" -> {
                         result.success(playMp3(myUri =  call.argument<String>("text")))
                     }
-                }
-
-
-// add this method to handle the calls from flutter
-
-            }
-        MethodChannel(flutterEngine?.dartExecutor?.binaryMessenger, channel3)
-            .setMethodCallHandler { call, result ->
-                when (call.method) {
-
                     "stopRingtone" -> {
                         result.success(stopMp3())
                     }
@@ -57,17 +34,26 @@ var _ringtone: Ringtone? = null;
             }
 
     }
-    private fun getAllRingtones(context: Context): List<String> {
+    private fun getAllRingtones(context: Context): Map<String, Any> {
 
         val manager = RingtoneManager(context)
         manager.setType(RingtoneManager.TYPE_RINGTONE)
 
         val cursor: Cursor = manager.cursor
+        val list: MutableMap<String, String> = LinkedHashMap()
+        val title = "Set to Default"
+        val defaultRingtoneUri =
+            RingtoneManager.getActualDefaultRingtoneUri(activity, RingtoneManager.TYPE_RINGTONE)
+        list[title] = defaultRingtoneUri.toString() // first add the default, to get back if select another
 
-        val list: MutableList<String> = mutableListOf()
 
-            val notificationTitle: Uri = manager.getRingtoneUri(RingtoneManager.TITLE_COLUMN_INDEX)
-            list.add(notificationTitle.toString())
+        while (cursor.moveToNext()) {
+            val notificationTitle = cursor.getString(RingtoneManager.TITLE_COLUMN_INDEX)
+            val notificationUri = manager.getRingtoneUri(cursor.position)
+            list[notificationTitle] = notificationUri.toString()
+        }
+//         cursor.close();
+
 
         return list
     }
