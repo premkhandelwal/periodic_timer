@@ -27,12 +27,14 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  audioplayers: ^0.20.1
   cupertino_icons: ^1.0.2
+  equatable: ^2.0.3
   flutter:
     sdk: flutter
-  radial_menu: ^0.0.1
-  scroll_to_index: ^2.1.1
-  scrollable_positioned_list: ^0.2.3
+  flutter_bloc: ^8.0.1
+  flutter_ringtone_player: ^3.1.1
+  path_provider: ^2.0.9
 
 dev_dependencies:
   flutter_lints: ^1.0.0
